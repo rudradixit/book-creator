@@ -1,0 +1,44 @@
+<project name="book-creator" default="all" basedir=".">
+    <property file="build.properties" />
+
+    <tstamp>
+        <format property="now" pattern="yyyyMMddhhmmss" />
+    </tstamp>
+
+    <path id="class.path">
+        <fileset dir="lib">
+            <include name="**/*.jar" />
+        </fileset>
+    </path>
+
+    <target name="clean">
+        <delete dir="${build}" />
+        <delete dir="${dist}" />
+        <delete dir="${hadoop.output}" />
+    </target>
+
+    <target name="init">
+        <tstamp/>
+        <mkdir dir="${build}"/>
+    </target>
+
+    <target name="compile">
+        <javac srcdir="${src}" destdir="${build}">
+            <classpath refid="class.path" />
+        </javac>
+    </target>
+
+    <target name="jar">
+        <jar destfile="${dist}/${project.name}.jar">
+            <fileset dir="${build}" />
+            <fileset dir=".">
+                <include name="**/${lib}/**"/>
+            </fileset>
+            <manifest>
+                <attribute name="Main-Class" value="${main.class}"/>
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="all" depends="clean, init, compile, jar" />
+</project>
