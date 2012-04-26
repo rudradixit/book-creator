@@ -22,8 +22,7 @@ import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.URI;
 import java.util.Iterator;
 
@@ -31,13 +30,25 @@ public class BookCreatorReducer extends Reducer<LongWritable, Text, Text, MapWri
     @Override
     public void reduce(LongWritable key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
         Configuration config = new Configuration();
-        Iterator<Text> text = values.iterator();
+        Iterator<Text> textIterator = values.iterator();
 
-        while (text.hasNext()) {
-            FileSystem fs = FileSystem.get(URI.create("."), config);
-            OutputStream out = fs.create(new Path(key.toString() + "_" + System.currentTimeMillis() + ".htm"));
-            out.write(text.next().toString().getBytes());
-            out.flush();
+        String outputPath = context.getConfiguration().get("mapred.output.dir") == null ?
+                                                                    "" :
+                                                                    context.getConfiguration().get("mapred.output.dir")
+                                                                    + System.getProperty("file.separator");
+
+        Text text;
+        BufferedWriter bw;
+        FileSystem fs;
+        OutputStream out;
+
+        while (textIterator.hasNext()) {
+            text = textIterator.next();
+            fs = FileSystem.get(URI.create("."), config);
+            out = fs.create(new Path(outputPath + key.toString() + "_" + System.currentTimeMillis() + ".htm"));
+            bw = new BufferedWriter(new OutputStreamWriter(out));
+            bw.write(text.toString());
+            bw.close();
         }
     }
 }

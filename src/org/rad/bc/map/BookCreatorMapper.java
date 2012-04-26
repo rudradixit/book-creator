@@ -29,7 +29,8 @@ public class BookCreatorMapper extends Mapper<LongWritable, Text, LongWritable, 
     @Override
     public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
         StringBuilder output = download(value.toString());
-        context.write(key, new Text(output.toString()));
+        Text text = new Text(output.toString());
+        context.write(key, text);
     }
 
     private StringBuilder download(String link) {
@@ -45,7 +46,7 @@ public class BookCreatorMapper extends Mapper<LongWritable, Text, LongWritable, 
             reader = new BufferedReader(new InputStreamReader(stream));
 
             while ((line = reader.readLine()) != null) {
-                builder.append(line).append(System.getProperty("line.separator"));
+                builder.append(line);
             }
         } catch (Exception exc) {
             throw new RuntimeException("Error while downloading link [" + link + "].", exc);
